@@ -1,0 +1,17 @@
+export const config = {
+  "secureProtocol": false,
+  "ip": "",
+  "port": "9000",
+  "db": {
+    "host": "localhost",
+    "database": "",
+    "username": "",
+    "password": "",
+    "maxPoolAmount": 50
+  },
+  "cors": {
+    "origins": [ "*" ],
+    "methods": [ "POST", "GET", "OPTIONS" ],
+    "headers": [ "Content-Type", "X-Token", "X-Requested-With" ]
+  }
+};
