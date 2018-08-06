@@ -7,8 +7,13 @@ import http from 'http';
 // import socketIo from 'socket.io';
 // import * as sockets from './socket';
 
+
 import { config } from "../config";
 import { normalizePort } from "./utils/server-utils";
+import { makeRelations } from "./models/relations";
+
+// sync models schemas
+makeRelations();
 
 /**
  * Get port from config and set in Express.

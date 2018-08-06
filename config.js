@@ -4,10 +4,12 @@ export const config = {
   "port": "9000",
   "db": {
     "host": "localhost",
-    "database": "",
-    "username": "",
-    "password": "",
-    "maxPoolAmount": 50
+    "database": "voxel-world",
+    "username": "root",
+    "password": "115563",
+    "maxPoolAmount": 100,
+    "minPoolAmount": 1,
+    "idleTimeoutMs": 10000
   },
   "cors": {
     "origins": [ "*" ],

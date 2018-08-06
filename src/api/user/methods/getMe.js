@@ -1,5 +1,6 @@
 import Promise from 'bluebird';
 import { wrapRequest } from "../../../utils";
+import { ApiError } from "../../../utils/error";
 
 /**
  * @param {*} req
@@ -16,10 +17,13 @@ export function getMeRequest (req, res, next) {
  * @return {Promise<{firstName: string, lastName: string}>}
  */
 export async function getMe (params) {
-  let {} = params;
+  let {
+    user
+  } = params;
 
-  return {
-    firstName: 'Alex',
-    lastName: 'Belov'
-  };
+  if (!user) {
+    throw new ApiError( 'unauthorized', 403 );
+  }
+
+  return user.toJSON();
 }
