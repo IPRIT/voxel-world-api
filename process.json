@@ -5,6 +5,6 @@
     "exec_mode": "cluster",
     "max_memory_restart": "800M",
     "cron_re2start": "0 5 * * *",
-    "env": { "NODE_ENV": "development" }
+    "env": { "NODE_ENV": "production" }
   }]
 }

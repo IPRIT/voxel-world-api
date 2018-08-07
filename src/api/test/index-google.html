@@ -40,9 +40,9 @@
         var app = angular.module('TestApp', []);
 
         app.controller('TestCtrl', ['$scope', '$http', function ($scope, $http) {
-            $scope.signIn = function (tokenId) {
+            $scope.signIn = function (accessToken) {
                 var apiUrl = 'http://localhost:9000/api/user/authenticate/google';
-                return $http.post(apiUrl, { tokenId });
+                return $http.post(apiUrl, { accessToken });
             }
         }]);
 

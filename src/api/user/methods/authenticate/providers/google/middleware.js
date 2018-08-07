@@ -19,10 +19,10 @@ function isGoogleUserLike (obj) {
  * @param {Function} next
  */
 export function googleTokenVerifier (req, res, next) {
-  let tokenId = req.body.tokenId;
-  let clientId = config.google.clientId;
+  let { accessToken = '' } = req.body;
+  let { clientId } = config.google;
 
-  return Promise.promisify(verifier.verify)(tokenId, clientId).then(googleUser => {
+  return Promise.promisify(verifier.verify)(accessToken, clientId).then(googleUser => {
     if (!isGoogleUserLike( googleUser )) {
       throw new ApiError( 'authentication_failed' );
     }

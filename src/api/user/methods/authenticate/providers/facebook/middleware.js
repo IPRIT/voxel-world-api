@@ -17,9 +17,7 @@ function isFacebookUserLike (obj) {
  * @param {Function} next
  */
 export function facebookTokenVerifier (req, res, next) {
-  console.log(req.body);
   let accessToken = req.body.accessToken;
-
 
   // bluebird's promisify function works incorrectly for the `fb.api`
   fb.api('me', { fields: ['id', 'name', 'email'], access_token: accessToken }, facebookUser => {

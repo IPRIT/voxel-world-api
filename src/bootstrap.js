@@ -4,10 +4,6 @@
 import app from './app';
 import http from 'http';
 
-// import socketIo from 'socket.io';
-// import * as sockets from './socket';
-
-
 import { config } from "../config";
 import { normalizePort } from "./utils/server-utils";
 import { makeRelations } from "./models/relations";
@@ -18,19 +14,14 @@ makeRelations();
 /**
  * Get port from config and set in Express.
  */
-let port = normalizePort( config.port );
+const port = normalizePort( config.port );
 app.set( 'port', port );
 app.set( 'env', process.env.NODE_ENV );
 
 /**
  * Create HTTP server.
  */
-
-let server = http.createServer( app );
-// const io = require('socket.io')(server);
-// sockets.initialize( io );
-
-// io.on('connection', sockets.subscribeEvents);
+const server = http.createServer( app );
 
 /**
  * Listen on provided port, on all network interfaces.
