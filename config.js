@@ -15,5 +15,8 @@ export const config = {
     "origins": [ "*" ],
     "methods": [ "POST", "GET", "OPTIONS" ],
     "headers": [ "Content-Type", "X-Token", "X-Requested-With" ]
+  },
+  "google": {
+    "clientId": "459178147971-cimcqioj59eueu912ke130qsso4bb2sk.apps.googleusercontent.com"
   }
 };

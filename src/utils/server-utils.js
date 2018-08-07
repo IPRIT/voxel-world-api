@@ -1,4 +1,5 @@
-import { getMe } from "../api/user/methods/getMe";
+import Promise from 'bluebird';
+import crypto from 'crypto';
 
 /**
  *
@@ -48,4 +49,26 @@ export function wrapRequest (asyncMethodFn, req, res, next) {
       response
     });
   }).catch( next );
+}
+
+/**
+ * @param {number} bufferLength
+ * @return {Promise<string>}
+ */
+export function generateCryptoToken (bufferLength = 48) {
+  let getRandomBytes = Promise.promisify( crypto.randomBytes );
+  return getRandomBytes( bufferLength ).then(buffer => {
+    return buffer.toString( 'hex' );
+  });
+}
+
+
+/**
+ * @param {User} user
+ * @return {AuthToken}
+ */
+export function generateTokenForUser (user) {
+  return generateCryptoToken().then(token => {
+    return user.createAuthToken({ token });
+  });
 }
