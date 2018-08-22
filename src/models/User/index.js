@@ -19,25 +19,27 @@ export const User = sequelize.define('User', {
     validate: {
       isEmail: true
     },
-    allowNull: true
+    allowNull: true,
+    unique: true
   },
   nickname: {
     type: Sequelize.STRING,
     allowNull: true,
-    unique: true,
     validate: {
       // a) allows words where first and last symbols are always alphanumeric;
       // b) allow to use underscores, points & hyphens no more then 1 time in a row
-      is: /^[a-zA-Z0-9](?:[a-zA-Z0-9]*[_.-]?[a-zA-Z0-9]+)+[a-zA-Z0-9]$/i
+      is: /^\w+$/i
     }
   },
   googleId: {
     type: Sequelize.STRING,
-    allowNull: true
+    allowNull: true,
+    unique: true
   },
   facebookId: {
     type: Sequelize.BIGINT,
-    allowNull: true
+    allowNull: true,
+    unique: true
   },
   isSuspended: {
     type: Sequelize.BOOLEAN,
@@ -69,6 +71,12 @@ export const User = sequelize.define('User', {
   registerTimeMs: {
     type: Sequelize.BIGINT( 15 ).UNSIGNED,
     defaultValue: () => Date.now()
+  },
+  isGuest: {
+    type: new Sequelize.VIRTUAL(Sequelize.BOOLEAN, [ 'googleId', 'facebookId' ]),
+    get () {
+      return !this.get('googleId') && !this.get('facebookId');
+    }
   }
 }, {
   getterMethods: {
@@ -77,8 +85,9 @@ export const User = sequelize.define('User', {
       return ['firstName', 'lastName'].reduce((placeholder, key) => {
         let regexp = new RegExp(`\{${key}\}`, 'gi');
         return placeholder.replace(regexp, this[ key ]);
-      }, placeholder);
+      }, placeholder).trim();
     },
+
     isAdmin() {
       if (!this.accessGroup) {
         return false;
@@ -95,8 +104,8 @@ export const User = sequelize.define('User', {
       while (names.length < 2) {
         names.push(' ');
       }
-      this.setDataValue('firstName', names.slice(0, -1).join(' '));
-      this.setDataValue('lastName', names.slice(-1).join(' '));
+      this.setDataValue('firstName', names.slice(0, -1).join(' ').trim());
+      this.setDataValue('lastName', names.slice(-1).join(' ').trim());
     }
   },
   paranoid: true,
