@@ -26,7 +26,11 @@ export const config = {
     "options": {
       "path": "/queue",
       "serveClient": false,
-      "cookie": false
+
+      // below are engine.IO options
+      "pingTimeout": 20000,
+      "pingInterval": 10000,
+      "cookie": false,
     }
   }
 };
