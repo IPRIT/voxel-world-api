@@ -39,12 +39,15 @@ function getOrCreateUser(googleUser) {
     if (!user) {
       return createUser( googleUser );
     }
-    console.log( 'Signed in as:', user && user.toJSON().email );
+    return user;
+  }).then(user => {
     if (!user.googleId) {
       user.googleId = sub;
-      await user.save();
     }
-    return user;
+    user.updateLastLoggedTime();
+    return user.save();
+  }).tap(user => {
+    console.log( 'Signed in as:', user && user.toJSON().email );
   });
 }
 

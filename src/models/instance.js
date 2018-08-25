@@ -14,6 +14,9 @@ export const sequelize = new Sequelize(
       idle: config.db.idleTimeoutMs || 10000
     },
 
-    logging: false && console.log.bind( console, '[Sequelize]' )
+    logging (context) {
+      true && console.log( '[Sequelize]', context )
+    }
   }
+
 );

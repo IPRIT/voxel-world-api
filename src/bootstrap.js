@@ -7,7 +7,7 @@ import http from 'http';
 import { config } from "../config";
 import { normalizePort } from "./utils/server-utils";
 import { makeRelations } from "./models/relations";
-import { QueueSocketManager } from "./socket/queue-manager";
+import { QueueSocketManager } from "./socket/queue-socket-manager";
 
 // sync models schemas
 makeRelations();

@@ -42,9 +42,8 @@ async function retrieveUser(req, res, next) {
 
   req.user = user;
 
-  await user.update({
-    recentActivityTimeMs: Date.now()
-  });
+  user.updateRecentActivityTime();
+  await user.save();
 
   next();
 }

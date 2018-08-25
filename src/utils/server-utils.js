@@ -62,6 +62,15 @@ export function generateCryptoToken (bufferLength = 48) {
   });
 }
 
+/**
+ * @param {Socket} socket
+ * @return {Object}
+ */
+export function extractSocketQuery (socket) {
+  const { handshake = {} } = socket;
+  return handshake.query || {};
+}
+
 
 /**
  * @param {User} user

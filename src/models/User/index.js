@@ -159,13 +159,20 @@ export const User = sequelize.define('User', {
         }
       }
     }
-  },
-  instanceMethods: {
-    hasRight: function (mask) {
-      return groupUtils.hasRight(
-        this.accessGroup,
-        mask
-      );
-    }
   }
 });
+
+User.prototype.hasRight = function (mask) {
+  return groupUtils.hasRight(
+    this.accessGroup,
+    mask
+  );
+};
+
+User.prototype.updateLastLoggedTime = function () {
+  this.lastLoggedTimeMs = Date.now();
+};
+
+User.prototype.updateRecentActivityTime = function () {
+  this.recentActivityTimeMs = Date.now();
+};

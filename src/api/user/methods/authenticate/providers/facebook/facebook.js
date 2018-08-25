@@ -39,12 +39,15 @@ function getOrCreateUser (facebookUser) {
     if (!user) {
       return createUser( facebookUser );
     }
-    console.log( '[Facebook] Signed in as:', user && user.toJSON().email );
+    return user;
+  }).then(user => {
     if (!user.facebookId) {
       user.facebookId = id;
-      await user.save();
     }
-    return user;
+    user.updateLastLoggedTime();
+    return user.save();
+  }).tap(user => {
+    console.log( '[Facebook] Signed in as:', user && user.toJSON().email );
   });
 }
 
