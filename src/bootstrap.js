@@ -7,7 +7,7 @@ import http from 'http';
 import { config } from "../config";
 import { normalizePort } from "./utils/server-utils";
 import { makeRelations } from "./models/relations";
-import { QueueSocketManager } from "./socket/queue-socket-manager";
+import { QueueManager } from "./matchmaking/queue/queue-manager";
 
 // sync models schemas
 makeRelations();
@@ -23,7 +23,7 @@ app.set( 'env', process.env.NODE_ENV );
  * Create HTTP server.
  */
 const server = http.createServer( app );
-const socketManager = QueueSocketManager.getManager();
+const socketManager = QueueManager.getManager();
 socketManager.initialize( server );
 
 /**

@@ -33,3 +33,21 @@ export function validateToken (token) {
     }
   });
 }
+
+/**
+ * @param {string} token
+ * @return {Promise<User>}
+ */
+export async function getUserByToken (token) {
+  let tokenInstance = await AuthToken.findOne({
+    where: { token }
+  });
+  if (!tokenInstance) {
+    return null;
+  }
+  return tokenInstance.getUser({
+    attributes: {
+      exclude: [ 'deletedAt' ]
+    }
+  });
+}

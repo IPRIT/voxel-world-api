@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import { AuthToken, User } from "../../models";
+import { getUserByToken } from "../../utils/models-utils";
 
 /**
  * @param {*} req
@@ -33,7 +33,7 @@ async function retrieveUser(req, res, next) {
   let user;
 
   if (typeof token === 'string') {
-    user = await getUser( token );
+    user = await getUserByToken( token );
   }
 
   if (!user) {
@@ -46,22 +46,4 @@ async function retrieveUser(req, res, next) {
   await user.save();
 
   next();
-}
-
-/**
- * @param {string} token
- * @return {Promise<User>}
- */
-async function getUser(token) {
-  let tokenInstance = await AuthToken.findOne({
-    where: { token }
-  });
-  if (!tokenInstance) {
-    return null;
-  }
-  return tokenInstance.getUser({
-    attributes: {
-      exclude: [ 'deletedAt' ]
-    }
-  });
 }
