@@ -42,7 +42,7 @@ export const AuthToken = sequelize.define('AuthToken', {
     getUser: function (options = {}) {
       let defaultOptions = {
         where: {
-          uuid: this.userUuid
+          uuid: this.userId
         }
       };
       deap.extend( options, defaultOptions );

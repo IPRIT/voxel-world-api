@@ -7,7 +7,7 @@ import http from 'http';
 import { config } from "../config";
 import { normalizePort } from "./utils/server-utils";
 import { makeRelations } from "./models/relations";
-import { QueueManager } from "./matchmaking/queue/queue-manager";
+import { QueueManager, ServerStatusObserver } from "./matchmaking";
 
 // sync models schemas
 makeRelations();
@@ -23,8 +23,14 @@ app.set( 'env', process.env.NODE_ENV );
  * Create HTTP server.
  */
 const server = http.createServer( app );
-const socketManager = QueueManager.getManager();
-socketManager.initialize( server );
+
+// run queue manager
+const queueManager = QueueManager.getManager();
+queueManager.initialize( server );
+
+// start observing servers status
+const serversObserver = ServerStatusObserver.getManager();
+serversObserver.runObserver();
 
 /**
  * Listen on provided port, on all network interfaces.

@@ -1,6 +1,7 @@
 import { generateTokenForUser } from "../../../../../../utils/index";
 import { User } from "../../../../../../models/index";
 import { extractAllParams } from "../../../../../../utils";
+import * as superheroes from "superheroes";
 
 /**
  * @param {*} req
@@ -26,6 +27,10 @@ export function guest (req, res, next) {
  */
 function getOrCreateUser(params) {
   let { userNickname } = params;
+
+  if (!userNickname) {
+    userNickname = superheroes.random();
+  }
 
   return createUser( { userNickname } ).tap(user => {
     console.log( 'Signed in as [guest]:', user && user.toJSON().nickname );

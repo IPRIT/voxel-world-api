@@ -26,9 +26,8 @@ export const User = sequelize.define('User', {
     type: Sequelize.STRING,
     allowNull: true,
     validate: {
-      // a) allows words where first and last symbols are always alphanumeric;
-      // b) allow to use underscores, points & hyphens no more then 1 time in a row
-      is: /^\w+$/i
+      // https://regex101.com/r/K8kvOX/3/
+      is: /^(?![-_ \\\/!@#$%^&*()=+.,`'~><])[^\\\/!@#$%^&*()=+.,`'~><\n\r]{2,18}$/i
     }
   },
   googleId: {
@@ -46,7 +45,21 @@ export const User = sequelize.define('User', {
     defaultValue: false
   },
   balance: {
-    type: Sequelize.FLOAT,
+    type: Sequelize.DECIMAL( 10, 2 ),
+    defaultValue: 0,
+    get () {
+      return Number( this.getDataValue( 'balance' ) ) || 0;
+    },
+    set (value) {
+      this.setDataValue( 'balance', value );
+    }
+  },
+  experience: {
+    type: Sequelize.BIGINT( 15 ).UNSIGNED,
+    defaultValue: 0
+  },
+  competitiveRating: {
+    type: Sequelize.INTEGER,
     defaultValue: 0
   },
   accessGroup: {
@@ -109,7 +122,7 @@ export const User = sequelize.define('User', {
     }
   },
   paranoid: true,
-  engine: 'MYISAM',
+  engine: 'INNODB',
   indexes: [{
     name: 'social_profiles_index',
     method: 'BTREE',

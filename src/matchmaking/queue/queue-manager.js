@@ -4,6 +4,7 @@ import { getUserByToken, validateToken } from "../../utils/models-utils";
 import { extractSocketQuery } from "../../utils/index";
 import { Queue } from "./queue";
 import { Player } from "../player";
+import * as superheroes from "superheroes";
 
 export class QueueManager {
 
@@ -71,6 +72,7 @@ export class QueueManager {
    */
   _initQueue (region, gameType) {
     const queue = new Queue({ region, gameType });
+    queue.tick();
     this._queuesMap.set(
       this._buildQueueKey( region, gameType ),
       queue
@@ -132,7 +134,7 @@ export class QueueManager {
    */
   _onConnection (socket) {
     const params = extractSocketQuery( socket );
-    const defaultNickname = 'Unknown player';
+    const defaultNickname = superheroes.random();
 
     let { nickname = defaultNickname } = params;
     if (!nickname) {
@@ -164,7 +166,7 @@ export class QueueManager {
    * @private
    */
   async _updateUser (user, params = {}) {
-    const {
+    let {
       nickname
     } = params;
 

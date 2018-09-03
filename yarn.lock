@@ -830,6 +830,10 @@ bytes@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.0.0.tgz#d32815404d689699f85a4ea4fa8755dd13a96048"
 
+cache@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/cache/-/cache-2.1.0.tgz#ec970ce99a3d1f12e191e0abb02dedc71d2743c8"
+
 callsite@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/callsite/-/callsite-1.0.0.tgz#280398e5d664bd74038b6f0905153e6e8af1bc20"
@@ -1913,6 +1917,12 @@ strip-ansi@^3.0.0:
   dependencies:
     ansi-regex "^2.0.0"
 
+superheroes@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/superheroes/-/superheroes-2.0.0.tgz#8e18ea99b718973afb9b76afd213c7c0e0263537"
+  dependencies:
+    unique-random-array "^1.0.0"
+
 supports-color@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-2.0.0.tgz#535d045ce6b6363fa40117084629995e9df324c7"
@@ -1987,6 +1997,16 @@ ultron@~1.1.0:
 underscore@^1.8.3:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.9.1.tgz#06dce34a0e68a7babc29b365b8e74b8925203961"
+
+unique-random-array@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/unique-random-array/-/unique-random-array-1.0.1.tgz#f29bda2a62be8860a703c4739c8f4fdb4d722cc7"
+  dependencies:
+    unique-random "^1.0.0"
+
+unique-random@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/unique-random/-/unique-random-1.0.0.tgz#ce3e224c8242cd33a0e77b0d7180d77e6b62d0c4"
 
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"

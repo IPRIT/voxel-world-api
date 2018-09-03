@@ -3,6 +3,7 @@ import { User } from "./User";
 import { AuthToken } from "./AuthToken";
 import { GameSession } from "./GameSession";
 import { GameServer } from "./GameServer";
+import { GameInstance } from "./GameInstance";
 
 export function makeRelations () {
   /**
@@ -14,8 +15,11 @@ export function makeRelations () {
   User.hasMany( GameSession, { foreignKey: 'userId', targetKey: 'id' } );
   GameSession.belongsTo( User, { foreignKey: 'userId', targetKey: 'id' } );
 
-  GameServer.hasMany( GameSession, { foreignKey: 'serverId', targetKey: 'id' } );
-  GameSession.belongsTo( GameServer, { foreignKey: 'serverId', targetKey: 'id' } );
+  GameServer.hasMany( GameInstance, { foreignKey: 'serverId', targetKey: 'id' } );
+  GameInstance.belongsTo( GameServer, { foreignKey: 'serverId', targetKey: 'id' } );
+
+  GameInstance.hasMany( GameSession, { foreignKey: 'instanceId', targetKey: 'id' } );
+  GameSession.belongsTo( GameInstance, { foreignKey: 'instanceId', targetKey: 'id' } );
 
   console.log( 'Models are syncing...' );
   return sequelize.sync(/**{ force: true }/**/).then(() => {

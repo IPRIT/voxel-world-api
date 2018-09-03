@@ -1,6 +1,18 @@
 import { QueueItem } from "./queue-item";
+import { ServerStatusObserver } from "../servers";
+import { matchmake } from "../matchmaking";
+
+export const QueueEvents = {
+  SERVER_FOUND: 'queue.serverFound'
+};
 
 export class Queue {
+
+  /**
+   * @type {number}
+   * @private
+   */
+  _tickIntervalMs = 1000;
 
   /**
    * @type {string}
@@ -27,6 +39,44 @@ export class Queue {
   constructor ({ region = 'eu', gameType = 'quick' }) {
     this._region = region;
     this._gameType = gameType;
+  }
+
+  /**
+   * Next tick of queue
+   */
+  tick () {
+    if (this.isQueueEmpty) {
+      return this.requestNextTick();
+    }
+
+    const statusObserver = ServerStatusObserver.getManager();
+    const servers = statusObserver.getFitServersForPlayers({
+      region: this._region, gameType: this._gameType
+    });
+
+    const tickAt = Date.now();
+
+    return matchmake( servers, this._queue ).then(queueItemsToLeave => {
+      (queueItemsToLeave || []).forEach(
+        this.removeFromQueue.bind( this )
+      );
+
+      this.requestNextTick(
+        Math.max(
+          0, this._tickIntervalMs - ( Date.now() - tickAt )
+        )
+      );
+    });
+  }
+
+  /**
+   * @param {number} delayMs
+   */
+  requestNextTick (delayMs = this._tickIntervalMs) {
+    setTimeout(
+      this.tick.bind( this ),
+      delayMs
+    );
   }
 
   /**
@@ -76,6 +126,20 @@ export class Queue {
    */
   get queue () {
     return this._queue;
+  }
+
+  /**
+   * @return {number}
+   */
+  get queueSize () {
+    return this._queue.length;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  get isQueueEmpty () {
+    return this.queueSize === 0;
   }
 
   /**

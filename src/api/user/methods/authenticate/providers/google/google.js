@@ -1,3 +1,4 @@
+import Sequelize from 'sequelize';
 import { generateTokenForUser } from "../../../../../../utils/index";
 import { User } from "../../../../../../models/index";
 
@@ -30,7 +31,7 @@ function getOrCreateUser(googleUser) {
 
   return User.findOne({
     where: {
-      $or: {
+      [Sequelize.Op.or]: {
         email,
         googleId: sub
       }

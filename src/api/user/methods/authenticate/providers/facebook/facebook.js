@@ -1,3 +1,4 @@
+import Sequelize from 'sequelize';
 import { generateTokenForUser } from "../../../../../../utils/index";
 import { User } from "../../../../../../models/User/index";
 
@@ -30,7 +31,7 @@ function getOrCreateUser (facebookUser) {
 
   return User.findOne({
     where: {
-      $or: {
+      [Sequelize.Op.or]: {
         email,
         facebookId: id
       }

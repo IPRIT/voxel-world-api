@@ -7,19 +7,11 @@ export const GameSession = sequelize.define('GameSession', {
     autoIncrement: true,
     primaryKey: true
   },
-  userType: {
-    type: Sequelize.ENUM('anonymous', 'user'),
-    defaultValue: 'anonymous'
-  },
-  userNickname: {
+  nickname: {
     type: Sequelize.STRING,
     defaultValue: 'Unnamed player'
   },
-  gameType: {
-    type: Sequelize.STRING,
-    defaultValue: 'quick'
-  },
-  gameToken: {
+  sessionToken: {
     type: Sequelize.CHAR( 96 )
   }
 }, {
@@ -28,6 +20,6 @@ export const GameSession = sequelize.define('GameSession', {
   indexes: [{
     name: 'token_index',
     method: 'BTREE',
-    fields: [ 'gameToken' ]
+    fields: [ 'sessionToken' ]
   }]
 });

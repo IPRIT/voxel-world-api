@@ -11,13 +11,13 @@ export const GameServer = sequelize.define('GameServer', {
     type: Sequelize.STRING
   },
   region: {
-    type: Sequelize.ENUM( 'eu-west', 'eu-east', 'na-west', 'na-east', 'asia' )
+    type: Sequelize.ENUM( 'na', 'eu', 'asia' )
   },
   publicIp: {
     type: Sequelize.STRING
   },
   gameType: {
-    type: Sequelize.STRING,
+    type: Sequelize.ENUM( 'quick', 'competitive' ),
     defaultValue: 'quick'
   },
   isTemporarilyDown: {
