@@ -122,7 +122,7 @@ export const User = sequelize.define('User', {
     }
   },
   paranoid: true,
-  engine: 'INNODB',
+  engine: 'MYISAM',
   indexes: [{
     name: 'social_profiles_index',
     method: 'BTREE',

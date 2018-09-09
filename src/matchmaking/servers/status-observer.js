@@ -45,7 +45,7 @@ export class ServerStatusObserver {
 
   update () {
     return fetchStatuses().then(servers => {
-      console.log('servers:', servers.map(server => server.status.status));
+      console.log('servers:', servers.map(server => server.status));
       this._servers = servers
     })
   }

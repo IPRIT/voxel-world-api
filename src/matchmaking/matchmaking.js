@@ -1,5 +1,6 @@
 import Promise from 'bluebird';
-import { GameStatus } from "./servers";
+import request from 'request-promise';
+import { GameStatus, GameStatusPriority } from "./servers";
 import { GameServer } from "../models/GameServer";
 import { GameInstance } from "../models/GameInstance";
 import { GameSession } from "../models/GameSession";
@@ -12,7 +13,7 @@ import { QueueEvents } from "./queue";
  */
 export async function matchmake (servers = [], queueItems = []) {
   queueItems = queueItems.slice(); // shallow copy of array
-  const sortedServers = sortServersByPlayers( servers );
+  const sortedServers = sortAvailableServers( servers );
   const pickedItems = [];
 
   for (let i = 0; i < sortedServers.length; ++i) {
@@ -118,6 +119,27 @@ async function createGameInstance (server) {
     });
   }).tap(gameInstance => {
     console.log( `[MatchMaking] Created 1 game instance with id: ${gameInstance.id}` );
+  }).then(gameInstance => {
+    return setInstanceRemote( server, gameInstance ).then(_ => {
+      return gameInstance;
+    });
+  });
+}
+
+/**
+ * @param {GameServer} server
+ * @param {GameInstance} gameInstance
+ * @return {Promise<*>}
+ */
+async function setInstanceRemote (server, gameInstance) {
+  const endpoint = `http://${server.publicIp}/api/game/instance`;
+  return request({
+    method: 'POST',
+    uri: endpoint,
+    json: true,
+    body: {
+      instance: gameInstance.toJSON()
+    }
   });
 }
 
@@ -125,11 +147,19 @@ async function createGameInstance (server) {
  * @param {Array<{server: *, status: *}>} servers
  * @return {Array<{server: *, status: *}>}
  */
-function sortServersByPlayers (servers = []) {
+function sortAvailableServers (servers = []) {
+  const statusPriority = GameStatusPriority;
+
   return servers.sort((serverA, serverB) => {
     const statusA = serverA.status;
     const statusB = serverB.status;
-    return statusB.playersNumber - statusA.playersNumber;
+    if (statusA.status === statusB.status) {
+      return statusB.playersNumber - statusA.playersNumber;
+    } else if (statusPriority[ statusA.status ] > statusPriority[ statusB.status ]) {
+      return -1;
+    } else if (statusPriority[ statusA.status ] < statusPriority[ statusB.status ]) {
+      return 1;
+    }
   });
 }
 

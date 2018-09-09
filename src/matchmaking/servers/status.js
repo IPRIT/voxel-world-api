@@ -4,7 +4,7 @@ import Cache from 'cache';
 import { GameServer } from "../../models/GameServer";
 import { getServerUnavailableError, getStatusUrl } from "./utils";
 
-const statusCache = new Cache( 1000 );
+const statusCache = new Cache( 100 );
 const serversCache = new Cache( 10 * 1000 );
 
 const SERVERS_CACHE_KEY = object => {
