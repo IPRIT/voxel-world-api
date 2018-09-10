@@ -1,6 +1,6 @@
 import { QueueItem } from "./queue-item";
 import { ServerStatusObserver } from "../servers";
-import { matchmake } from "../matchmaking";
+import { matchmaker } from "../matchmaking";
 
 export const QueueEvents = {
   SERVER_FOUND: 'queue.serverFound'
@@ -56,8 +56,8 @@ export class Queue {
 
     const tickAt = Date.now();
 
-    return matchmake( servers, this._queue ).then(queueItemsToLeave => {
-      (queueItemsToLeave || []).forEach(
+    return matchmaker( servers, this._queue ).then(queueItemsToLeave => {
+      queueItemsToLeave.forEach(
         this.removeFromQueue.bind( this )
       );
 
@@ -98,6 +98,10 @@ export class Queue {
    * @param {QueueItem} queueItem
    */
   removeFromQueue (queueItem) {
+    const { socket } = queueItem.player;
+    if (socket && socket.connected) {
+      socket.disconnect();
+    }
     this._removeFromQueue(queueItem.id, (queueItemId, queueItem) => {
       return queueItemId === queueItem.id;
     });

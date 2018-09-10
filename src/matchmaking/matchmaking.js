@@ -8,18 +8,18 @@ import { generateCryptoToken } from "../utils";
 import { QueueEvents } from "./queue";
 
 /**
- * @param {Array<Object>} servers
+ * @param {Array<Object>} serverStatuses
  * @param {Array<QueueItem>} queueItems
  */
-export async function matchmake (servers = [], queueItems = []) {
+export async function matchmaker (serverStatuses = [], queueItems = []) {
   queueItems = queueItems.slice(); // shallow copy of array
-  const sortedServers = sortAvailableServers( servers );
+  const sortedStatuses = sortAvailableServers( serverStatuses );
   const pickedItems = [];
 
-  for (let i = 0; i < sortedServers.length; ++i) {
-    const server = sortedServers[ i ];
+  for (let i = 0; i < sortedStatuses.length; ++i) {
+    const serverStatus = sortedStatuses[ i ];
     const playersToJoin = Math.max(
-      0, server.status.maxPlayersNumber - server.status.playersNumber
+      0, serverStatus.maxPlayersNumber - serverStatus.playersNumber
     );
     if (!playersToJoin) {
       continue;
@@ -27,7 +27,7 @@ export async function matchmake (servers = [], queueItems = []) {
 
     const items = queueItems.splice( 0, playersToJoin );
     if (items.length) {
-      await joinToServer( server, items );
+      await joinToServer( serverStatus, items );
       pickedItems.push( ...items );
     }
   }
@@ -36,15 +36,21 @@ export async function matchmake (servers = [], queueItems = []) {
 }
 
 /**
- * @param {Object} serverToConnect
+ * @param {ServerStatus} serverStatus
  * @param {Array<QueueItem>} queueItems
  */
-async function joinToServer (serverToConnect, queueItems) {
-  console.log( '[MatchMaking] Connecting to server id:', serverToConnect.server.id, ' Queue items:', queueItems.map(v => v.playerId) );
+async function joinToServer (serverStatus, queueItems) {
+  console.log(
+    '[MatchMaking] Connecting to server id:',
+    serverStatus.server.id,
+    '. Queue items:', queueItems.map(v => v.playerId)
+  );
+
+  serverStatus.lock( 5000 );
 
   const usersMap = buildUsersMap( queueItems );
 
-  return findOrCreateInstance( serverToConnect ).then(gameInstance => {
+  return findOrCreateInstance( serverStatus ).then(gameInstance => {
     return Promise.all([
       gameInstance,
       Promise.all(
@@ -82,7 +88,7 @@ async function joinToServer (serverToConnect, queueItems) {
     const { socket } = player;
 
     const serverInfo = {
-      server: serverToConnect.server,
+      server: serverStatus.server,
       session: session.toJSON()
     };
 
@@ -93,15 +99,15 @@ async function joinToServer (serverToConnect, queueItems) {
 }
 
 /**
- * @param {Object} targetServer
+ * @param {ServerStatus} serverStatus
  * @return {Promise<GameInstance>}
  */
-async function findOrCreateInstance (targetServer) {
-  const { server, status } = targetServer;
+async function findOrCreateInstance (serverStatus) {
+  const { server, status } = serverStatus;
 
-  if (status.status === GameStatus.FREE) {
+  if (serverStatus.statusName === GameStatus.FREE) {
     return createGameInstance( server );
-  } else if ([ GameStatus.WAITING_FOR_PLAYERS, GameStatus.PREPARING ].includes( status.status )) {
+  } else if ([ GameStatus.WAITING_FOR_PLAYERS, GameStatus.PREPARING ].includes( serverStatus.statusName )) {
     return GameInstance.findById( status.instanceId || 1 );
   }
 
@@ -109,7 +115,7 @@ async function findOrCreateInstance (targetServer) {
 }
 
 /**
- * @param {Object} server
+ * @param {GameServer} server
  * @return {Promise<GameInstance>}
  */
 async function createGameInstance (server) {
@@ -144,21 +150,24 @@ async function setInstanceRemote (server, gameInstance) {
 }
 
 /**
- * @param {Array<{server: *, status: *}>} servers
- * @return {Array<{server: *, status: *}>}
+ * @param {Array<ServerStatus>} statuses
+ * @return {Array<ServerStatus>}
  */
-function sortAvailableServers (servers = []) {
+function sortAvailableServers (statuses = []) {
   const statusPriority = GameStatusPriority;
 
-  return servers.sort((serverA, serverB) => {
-    const statusA = serverA.status;
-    const statusB = serverB.status;
-    if (statusA.status === statusB.status) {
-      return statusB.playersNumber - statusA.playersNumber;
-    } else if (statusPriority[ statusA.status ] > statusPriority[ statusB.status ]) {
-      return -1;
-    } else if (statusPriority[ statusA.status ] < statusPriority[ statusB.status ]) {
-      return 1;
+  return statuses.sort(
+    /**
+     * @param {ServerStatus} serverStatusA
+     * @param {ServerStatus} serverStatusB
+     */
+    (serverStatusA, serverStatusB) => {
+    if (serverStatusA.statusName === serverStatusB.statusName) {
+      return serverStatusB.playersNumber - serverStatusA.playersNumber;
+    } else {
+      return statusPriority[ serverStatusA.statusName ]
+        > statusPriority[ serverStatusB.statusName ]
+        ? -1 : 1;
     }
   });
 }

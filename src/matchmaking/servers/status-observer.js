@@ -1,5 +1,17 @@
-import { fetchStatuses } from "./status";
+import { ServerStatus } from "./server-status";
 import { GameStatus } from "./utils";
+import Promise from "bluebird";
+import { GameServer } from "../../models/GameServer";
+import Cache from 'cache';
+
+const SERVERS_CACHE_KEY = object => {
+  let prefix = `cache:servers`;
+  return [ prefix ].concat(
+    Object.keys( object ).sort().map(key => {
+      return `${key}=${object[ key ]}`;
+    }).join( '&' )
+  ).join( '?' );
+};
 
 export class ServerStatusObserver {
 
@@ -22,10 +34,16 @@ export class ServerStatusObserver {
   _observerIntervalMs = 1000;
 
   /**
-   * @type {Array}
+   * @type {Array<ServerStatus>}
    * @private
    */
-  _servers = [];
+  _statuses = [];
+
+  /**
+   * @type {Cache}
+   * @private
+   */
+  _serversCache = new Cache( 10 * 1000 );
 
   /**
    * @type {ServerStatusObserver}
@@ -43,11 +61,24 @@ export class ServerStatusObserver {
     return ( this._instance = new ServerStatusObserver() );
   }
 
+  /**
+   * @return {Promise<Array<ServerStatus>>}
+   */
   update () {
-    return fetchStatuses().then(servers => {
-      console.log('servers:', servers.map(server => server.status));
-      this._servers = servers
-    })
+    return Promise.try(_ => {
+      return this.fetchServers();
+    }).then(servers => {
+      return this._checkServers( servers );
+    }).filter(serverStatus => {
+      return !serverStatus.isUpdating;
+    }).map(
+      /**
+       * @param {ServerStatus} serverStatus
+       * @return {Promise<ServerStatus>}
+       */
+      serverStatus => {
+      return serverStatus.update();
+    }).tap(_ => this._logStatuses());
   }
 
   runObserver () {
@@ -64,12 +95,48 @@ export class ServerStatusObserver {
   }
 
   /**
+   * @param {*} params
+   * @return {Promise<GameServer[]>}
+   */
+  async fetchServers (params = {}) {
+    let {
+      region = 'all',
+      gameType = 'all',
+      ignoreCache = false
+    } = params;
+
+    let whereStatement = {
+      isTemporarilyDown: false
+    };
+    if (region !== 'all') {
+      Object.assign(whereStatement, { region });
+    }
+    if (gameType !== 'all') {
+      Object.assign(whereStatement, { gameType });
+    }
+
+    const cachedServers = this._serversCache.get( SERVERS_CACHE_KEY( whereStatement ) );
+    if (cachedServers && !ignoreCache) {
+      return cachedServers;
+    }
+
+    return GameServer.findAll({
+      where: whereStatement
+    }).map(server => {
+      return server.toJSON();
+    }).then(servers => {
+      this._serversCache.put( SERVERS_CACHE_KEY( whereStatement ), servers );
+      return servers;
+    });
+  }
+
+  /**
    * @param {string} region
    * @param {string} gameType
-   * @return {*[]}
+   * @return {Array<ServerStatus>}
    */
-  getServers ({ region, gameType } = {}) {
-    return this._servers.filter(({ server }) => {
+  filterStatuses ({ region, gameType } = {}) {
+    return this._statuses.filter(({ server }) => {
       if (region && gameType) {
         return server.region === region
           && server.gameType === gameType;
@@ -84,25 +151,27 @@ export class ServerStatusObserver {
 
   /**
    * @param {Object} filter
-   * @return {*[]}
+   * @return {Array<ServerStatus>}
    */
   getAvailableServers (filter = {}) {
-    return this.getServers( filter ).filter(({ server, status }) => {
-      return [
-        GameStatus.FREE,
-        GameStatus.WAITING_FOR_PLAYERS,
-        GameStatus.PREPARING
-      ].includes( status.status );
+    return this.filterStatuses( filter ).filter(serverStatus => {
+      return !serverStatus.isLocked
+        && serverStatus.status
+        && [
+          GameStatus.FREE,
+          GameStatus.WAITING_FOR_PLAYERS,
+          GameStatus.PREPARING
+        ].includes( serverStatus.statusName );
     });
   }
 
   /**
    * @param {Object} filter
    * @param {number} playersNumber
-   * @return {{server: *, status: *}[] | *[]}
+   * @return {Array<ServerStatus>}
    */
   getFitServersForPlayers (filter = {}, playersNumber = 1) {
-    return this.getAvailableServers( filter ).filter(({ server, status }) => {
+    return this.getAvailableServers( filter ).filter(status => {
       return status.playersNumber + playersNumber <= status.maxPlayersNumber;
     });
   }
@@ -115,9 +184,81 @@ export class ServerStatusObserver {
   }
 
   /**
-   * @return {Array<Object>}
+   * @return {Array<GameServer>}
    */
   get servers () {
-    return this._servers;
+    return this._statuses.map(serverStatus => {
+      return serverStatus.server;
+    });
+  }
+
+  /**
+   * @param {Array<GameServer>} servers
+   * @return {Array<ServerStatus>}
+   * @private
+   */
+  _checkServers (servers) {
+    const statuses = this._statuses;
+    const existingServersSet = new Set(
+      statuses.map( status => status.serverId )
+    );
+    const actualServersSet = new Set(
+      servers.map( server => server.id )
+    );
+
+    statuses.filter(serverStatus => {
+      return !actualServersSet.has( serverStatus.serverId );
+    }).forEach(status => {
+      this._deleteStatus( status );
+    });
+
+    servers.filter(server => {
+      return !existingServersSet.has( server.id );
+    }).forEach(newServer => {
+      this._addStatus( newServer );
+    });
+
+    return this._statuses;
+  }
+
+  /**
+   * @param {GameServer} server
+   * @return {ServerStatus}
+   * @private
+   */
+  _addStatus (server) {
+    const serverStatus = new ServerStatus({ server });
+    this._statuses.push( serverStatus );
+  }
+
+  /**
+   * @param {ServerStatus} status
+   * @return {ServerStatus}
+   * @private
+   */
+  _deleteStatus (status) {
+    if (!status || !status.server) {
+      return null;
+    }
+    const server = status.server;
+    const serverId = server.id;
+    const indexToDelete = this._statuses.findIndex(status => {
+      return status.serverId === serverId;
+    });
+    return this._statuses.splice( indexToDelete, 1 )[ 0 ];
+  }
+
+  /**
+   * @private
+   */
+  _logStatuses () {
+    const playerNumbers = status => [
+      status.playersNumber, status.maxPlayersNumber
+    ].map(v => Number(v) || 0).join('/');
+
+    console.log(
+      `[StatusObserver] Servers:`,
+      `[${this._statuses.map(status => `${status.statusName} (${playerNumbers(status)})`).join(', ')}]`
+    );
   }
 }
