@@ -6,16 +6,16 @@ import Promise from 'bluebird';
  * @param {string} token
  * @return {Promise}
  */
-export function validateToken (token) {
+export async function validateToken (token) {
   if (!token) {
-    throw new ApiError( 'unauthorized', 401 );
+    throw new Error( 'unauthorized' );
   }
 
   return AuthToken.findOne({
     where: { token }
   }).then(token => {
     if (!token) {
-      throw new ApiError( 'unauthorized', 401 );
+      throw new Error( 'unauthorized' );
     }
     return Promise.all([
       token,
@@ -27,9 +27,9 @@ export function validateToken (token) {
     ]);
   }).spread((token, user) => {
     if (!user) {
-      throw new ApiError( 'user_not_found', 404 );
+      throw new Error( 'user_not_found' );
     } else if (user.isSuspended) {
-      throw new ApiError( 'banned', 403 );
+      throw new Error( 'banned' );
     }
   });
 }

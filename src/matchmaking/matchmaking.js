@@ -107,8 +107,10 @@ async function findOrCreateInstance (serverStatus) {
 
   if (serverStatus.statusName === GameStatus.FREE) {
     return createGameInstance( server );
-  } else if ([ GameStatus.WAITING_FOR_PLAYERS, GameStatus.PREPARING ].includes( serverStatus.statusName )) {
-    return GameInstance.findById( status.instanceId || 1 );
+  } else if (
+    [ GameStatus.WAITING_FOR_PLAYERS, GameStatus.PREPARING ].includes( serverStatus.statusName ) && status.instance
+  ) {
+    return GameInstance.findById( status.instance.id );
   }
 
   throw new Error( 'Unable to create game instance' );

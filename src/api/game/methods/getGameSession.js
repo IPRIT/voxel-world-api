@@ -1,6 +1,6 @@
 import { wrapRequest } from "../../../utils";
 import { ApiError } from "../../../utils/error";
-import { GameSession, GameServer, User } from "../../../models";
+import { GameSession, GameInstance, User } from "../../../models";
 
 /**
  * @param {*} req
@@ -18,19 +18,23 @@ export function getGameSessionRequest (req, res, next) {
  */
 export async function getGameSession (params) {
   let {
-    gameToken
+    sessionToken
   } = params;
-  if (!gameToken) {
+
+  if (!sessionToken) {
     throw new ApiError( 'bad_request' );
   }
+
   let gameSession = await GameSession.findOne({
     where: {
-      gameToken
+      sessionToken
     },
-    include: [ GameServer, User ]
+    include: [ GameInstance, User ]
   });
+
   if (!gameSession) {
     throw new ApiError( 'invalid_game_session', 400 );
   }
+
   return gameSession.toJSON();
 }
