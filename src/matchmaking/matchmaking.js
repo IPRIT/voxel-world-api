@@ -4,7 +4,7 @@ import { GameStatus, GameStatusPriority } from "./servers";
 import { GameServer } from "../models/GameServer";
 import { GameInstance } from "../models/GameInstance";
 import { GameSession } from "../models/GameSession";
-import { generateCryptoToken } from "../utils";
+import { generateCryptoToken, resolveProtocol } from "../utils";
 import { QueueEvents } from "./queue";
 
 /**
@@ -140,7 +140,7 @@ async function createGameInstance (server) {
  * @return {Promise<*>}
  */
 async function setInstanceRemote (server, gameInstance) {
-  const endpoint = `https://${server.publicIp}/api/game/instance`;
+  const endpoint = `${resolveProtocol()}://${server.publicIp}/api/game/instance`;
   return request({
     method: 'POST',
     uri: endpoint,

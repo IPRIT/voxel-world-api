@@ -1,5 +1,6 @@
 import Promise from 'bluebird';
 import crypto from 'crypto';
+import { config } from "../../config";
 
 /**
  *
@@ -80,4 +81,11 @@ export function generateTokenForUser (user) {
   return generateCryptoToken().then(token => {
     return user.createAuthToken({ token });
   });
+}
+
+/**
+ * @return {string}
+ */
+export function resolveProtocol () {
+  return 'http' + (config.env === 'production' ? 's' : '');
 }

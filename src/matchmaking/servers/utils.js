@@ -1,9 +1,11 @@
+import { resolveProtocol } from "../../utils";
+
 /**
  * @param {GameServer} server
  * @return {string}
  */
 export function getStatusUrl (server) {
-  return `https://${server.publicIp}/api/game/status`;
+  return `${resolveProtocol()}://${server.publicIp}/api/game/status`;
 }
 
 /**
