@@ -3,7 +3,7 @@
  * @return {string}
  */
 export function getStatusUrl (server) {
-  return `http://${server.publicIp}/api/game/status`;
+  return `https://${server.publicIp}/api/game/status`;
 }
 
 /**
