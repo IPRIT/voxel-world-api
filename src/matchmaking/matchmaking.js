@@ -140,7 +140,7 @@ async function createGameInstance (server) {
  * @return {Promise<*>}
  */
 async function setInstanceRemote (server, gameInstance) {
-  const endpoint = `http://${server.publicIp}/api/game/instance`;
+  const endpoint = `https://${server.publicIp}/api/game/instance`;
   return request({
     method: 'POST',
     uri: endpoint,
