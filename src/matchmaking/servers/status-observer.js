@@ -258,7 +258,9 @@ export class ServerStatusObserver {
 
     console.log(
       `[StatusObserver] Servers:`,
-      `[${this._statuses.map(status => `${status.statusName} (${playerNumbers(status)})`).join(', ')}]`
+      `\n${this._statuses.map(status => {
+        return `[${status.server.name}: ${status.statusName} (${playerNumbers(status)})]`;
+      }).join('\n')}`
     );
   }
 }
