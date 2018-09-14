@@ -255,7 +255,6 @@ export class ServerStatusObserver {
     const playerNumbers = status => [
       status.playersNumber, status.maxPlayersNumber
     ].map(v => Number(v) || 0).join('/');
-
     console.log(
       `[StatusObserver] Servers:`,
       `\n${this._statuses.map(status => {
