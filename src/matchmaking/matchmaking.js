@@ -76,6 +76,8 @@ async function joinToServer (serverStatus, queueItems) {
     return GameSession.bulkCreate( bulkSessions );
   }).tap(sessions => {
     console.log( `[MatchMaking] Created ${sessions.length} game sessions.` );
+
+    serverStatus.increasePlayersNumberBy( sessions.length );
   }).map(session => {
     const queueItem = usersMap.get( session.userId );
 

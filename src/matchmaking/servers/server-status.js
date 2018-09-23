@@ -59,6 +59,13 @@ export class ServerStatus {
   }
 
   /**
+   * @param {number} playersNumber
+   */
+  increasePlayersNumberBy (playersNumber = 0) {
+    this._status.playersNumber += playersNumber;
+  }
+
+  /**
    * Locking any following searches until time is over
    */
   lock (lockTimeMs = 10000) {
