@@ -27,8 +27,12 @@ export async function matchmaker (serverStatuses = [], queueItems = []) {
 
     const items = queueItems.splice( 0, playersToJoin );
     if (items.length) {
-      await joinToServer( serverStatus, items );
-      pickedItems.push( ...items );
+      try {
+        await joinToServer( serverStatus, items );
+        pickedItems.push( ...items );
+      } catch (e) {
+        console.log( e );
+      }
     }
   }
 
